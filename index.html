@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifler/0.1.0/gifler.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycle Elf Web App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mine-styles.css">
+    <link rel="stylesheet" href="friend-styles.css">
+    <link rel="stylesheet" href="map-scan-styles.css">
+    <link rel="stylesheet" href="elf-home-styles.css">
+    <link rel="stylesheet" href="ai-assistant-styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <!-- 移除 Lottie 脚本 -->
+</head>
+<body>
+    <div class="app-container">
+        <!-- Welcome Screen -->
+        <section id="welcome" class="screen active">
+            <h1>WELCOME</h1>
+            <p>Embark on an environmental protection journey with your elf.</p>
+            <div class="logo">
+                <img src="assets/recycle-elf-logo.png" alt="Recycle Elf Logo">
+            </div>
+            <button class="btn primary" onclick="navigateTo('signin')">Sign in</button>
+            <button class="btn secondary" onclick="navigateTo('signup')">Sign up</button>
+            <p class="trademark">group12</p>
+        
+        </section>
+
+        <!-- Sign In Screen -->
+        <section id="signin" class="screen">
+            <div class="header">
+                <button class="back" onclick="navigateTo('welcome')">&lt; Back</button>
+                <h2>Sign in</h2>
+            </div>
+            <!-- 替换为 GIF -->
+            <img src="assets/recycle-animation.gif" alt="Recycle Animation" style="width: 200px; height: 200px; margin: 20px auto; display: block;">
+            <div class="input-group">
+                <img src="assets/email-icon.png" alt="Email Icon" class="input-icon">
+                <input type="text" id="username" placeholder="Username or Email Address">
+            </div>
+            <div class="input-group">
+                <img src="assets/lock-icon.png" alt="Lock Icon" class="input-icon">
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            <button class="btn primary" onclick="login()">Sign in</button>
+            <p class="forgot">Forgot?</p>
+        </section>
+
+        <!-- Sign Up Screen -->
+        <section id="signup" class="screen">
+            <div class="header">
+                <button class="back" onclick="navigateTo('welcome')">&lt; Back</button>
+                <h2>Sign up</h2>
+            </div>
+            <img src="assets/recycle-animation.gif" alt="Recycle Animation" style="width: 200px; height: 200px; margin: 20px auto; display: block;">
+            <div class="input-group">
+                <img src="assets/email-icon.png" alt="Email Icon" class="input-icon">
+                <input type="email" id="signup-email" placeholder="Email Address">
+            </div>
+            <div class="input-group">
+                <img src="assets/lock-icon.png" alt="Lock Icon" class="input-icon">
+                <input type="password" id="signup-password" placeholder="Password">
+            </div>
+            <div class="input-group">
+                <img src="assets/lock-icon.png" alt="Lock Icon" class="input-icon">
+                <input type="password" id="signup-confirm-password" placeholder="Repeat Password">
+            </div>
+            <button class="btn primary" onclick="signup()">Sign up</button>
+            <p class="forgot">Already have an account? <a href="#" onclick="navigateTo('signin'); return false;">Sign in</a></p>
+        </section>
+
+        <!-- Elf's Home Screen -->
+        <section id="elf-home" class="screen">
+            
+            <h2>Elf's home</h2>
+            <div class="customize">
+                <div class="item" onclick="openCustomizeModal('cloths')"><img src="assets/cloths-icon.png" alt="Cloths"> Cloths</div>
+                <div class="item" onclick="openCustomizeModal('furniture')"><img src="assets/furniture-icon.png" alt="Furniture"> Furniture</div>
+            </div>
+            <div class="elf-image" id="elf-customize-container"> <!-- 加id用于应用背景 -->
+                <img id="elf-character" src="assets/elf-character.png" alt="Elf"> <!-- 加id用于换衣服 -->
+                <img id="elf-furniture" src="" alt="Furniture" style="display: none; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 100px;"> <!-- 家具图层 -->
+            </div>
+            <button class="btn primary" onclick="navigateTo('ai-assistant')">Enter AI Assistant</button>
+            <div class="stats">
+                
+                <div class="item" onclick="openCustomizeModal('background')"><img src="assets/background-icon.png" alt="Background"> Background</div>
+            </div>
+            <button class="exp-button" onclick="navigateTo('experience-details')">Experience: <span id="elf-exp">0</span> / <span id="max-exp">100</span></button>
+            <nav class="bottom-nav">
+                <button onclick="navigateTo('elf-home')"><img src="assets/elf-nav-icon.png" alt="Elf"> Elf</button>
+                <button onclick="navigateTo('map')"><img src="assets/map-nav-icon.png" alt="Map"> Map</button>
+                <button onclick="navigateTo('scan')"><img src="assets/scan-nav-icon.png" alt="Scan"> Scan</button>
+                <button onclick="navigateTo('friend')"><img src="assets/friend-nav-icon.png" alt="Friend"> Friend</button>
+                <button onclick="navigateTo('mine')"><img src="assets/mine-nav-icon.png" alt="Mine"> Mine</button>
+            </nav>
+        </section>
+        <!-- AI Assistant Screen -->
+        <!-- AI Assistant Screen（完整替换） -->
+        <section id="ai-assistant" class="screen">
+            <div class="header">
+                <button class="back" onclick="navigateTo('elf-home')">&lt; Back</button>
+                <h2>AI Assistant</h2>
+            </div>
+            <div class="chat-container">
+                <button class="btn secondary" onclick="clearChat()">Clear Chat</button>
+                <div id="chat-messages" class="chat-messages"></div>
+
+                <!-- 上传 + 输入 + 发送（关键修复版） -->
+                <div class="input-group chat-input-row">
+                    <!-- 自定义上传按钮，input 放在 label 里，绝不双击 -->
+                    <label class="btn secondary upload-btn">
+                        📷 上传垃圾照片
+                        <input type="file" id="image-upload" accept="image/*" 
+                        onchange="handleImageUpload(event)">
+                    </label>
+
+                    <input type="text" id="ai-input" class="chat-input" placeholder="描述问题或上传照片让 AI 分类...">
+
+                    <button class="btn primary" onclick="sendMessageToAI()">Send</button>
+                </div>
+                <p class="chat-tip">支持文字咨询或上传垃圾照片，AI 会智能分类。</p>
+            </div>
+        </section>
+
+        <!-- Scan Screen -->
+        <section id="scan" class="screen">
+            <div class="eo">
+            <h2>Scan</h2>
+            <div class="scanner">
+                <input type="text" id="bin-code" placeholder="Enter Bin Code (e.g., 123)">
+                <button class="btn primary" onclick="validateBinCode()">Validate</button>
+            </div>
+            <p id="scan-message"></p>
+            <button class="btn secondary"><img src="assets/camera-icon.png" alt="Picture" class="btn-icon"> Picture</button>
+            <button class="btn secondary"><img src="assets/qr-icon.png" alt="QR Code" class="btn-icon"> My QR Code</button>
+            <nav class="bottom-nav">
+                <button onclick="navigateTo('elf-home')"><img src="assets/elf-nav-icon.png" alt="Elf"> Elf</button>
+                <button onclick="navigateTo('map')"><img src="assets/map-nav-icon.png" alt="Map"> Map</button>
+                <button onclick="navigateTo('scan')"><img src="assets/scan-nav-icon.png" alt="Scan"> Scan</button>
+                <button onclick="navigateTo('friend')"><img src="assets/friend-nav-icon.png" alt="Friend"> Friend</button>
+                <button onclick="navigateTo('mine')"><img src="assets/mine-nav-icon.png" alt="Mine"> Mine</button>
+            </nav>
+            </div>
+        </section>
+
+        <!-- Record Trash Screen -->
+        <section id="record-trash" class="screen">
+            
+            <h2>Record Trash</h2>
+            <select id="trash-type">
+                <option value="">Select Type</option>
+                <option value="plastic">Plastic</option>
+                <option value="metal">Metal</option>
+                <option value="paper">Paper Box</option>
+                <option value="battery">Battery</option>
+            </select>
+            <input type="number" id="trash-quantity" placeholder="Quantity" min="1">
+            <button class="btn primary" onclick="recordTrash()">Submit</button>
+            <p id="record-message"></p>
+            <button class="back" onclick="navigateTo('scan')">&lt; Back</button>
+        </section>
+
+        <!-- Friend Screen -->
+        <section id="friend" class="screen">
+            
+            <h2>Friend</h2>
+            <input type="text" placeholder="Search Friends...">
+            <div class="new-friends">
+                <h3>New Friend</h3>
+                <div class="friend-item"><img src="assets/new-friend1-avatar.png" alt="New Friend1" class="avatar"> New Friend <span>New request</span> <button>accept</button> <button>refuse</button></div>
+                <div class="friend-item"><img src="assets/new-friend2-avatar.png" alt="New Friend2" class="avatar"> New Friend <span>New request</span> <button>accept</button> <button>refuse</button></div>
+            </div>
+            <div class="my-friends">
+                <h3>My Friends</h3>
+                <div class="friend-item" onclick="viewFriendElf('Friend A')"><img src="assets/friend-a-avatar.png" alt="Friend A" class="avatar"> Friend A <span>L1</span> ></div>
+                <div class="friend-item" onclick="viewFriendElf('Friend B')"><img src="assets/friend-b-avatar.png" alt="Friend B" class="avatar"> Friend B <span>L2</span> ></div>
+                <div class="friend-item" onclick="viewFriendElf('Friend D')"><img src="assets/friend-d1-avatar.png" alt="Friend D1" class="avatar"> Friend D <span>L4</span> ></div>
+                <div class="friend-item" onclick="viewFriendElf('Friend D')"><img src="assets/friend-d2-avatar.png" alt="Friend D2" class="avatar"> Friend D <span>L3</span> ></div>
+            </div>
+            <nav class="bottom-nav">
+                <button onclick="navigateTo('elf-home')"><img src="assets/elf-nav-icon.png" alt="Elf"> Elf</button>
+                <button onclick="navigateTo('map')"><img src="assets/map-nav-icon.png" alt="Map"> Map</button>
+                <button onclick="navigateTo('scan')"><img src="assets/scan-nav-icon.png" alt="Scan"> Scan</button>
+                <button onclick="navigateTo('friend')"><img src="assets/friend-nav-icon.png" alt="Friend"> Friend</button>
+                <button onclick="navigateTo('mine')"><img src="assets/mine-nav-icon.png" alt="Mine"> Mine</button>
+            </nav>
+        </section>
+
+        <!-- Mine Screen -->
+        <section id="mine" class="screen">
+            
+            <h2>Mine</h2>
+            <div class="profile">
+                <img src="assets/user-avatar.png" alt="User">
+                <p>User ID: P007</p>
+                <button class="edit">Edit personal profile</button>
+            </div>
+            <ul class="menu">
+                <li><img src="assets/id-icon.png" alt="ID" class="menu-icon"> ID P007 ></li>
+                <li><img src="assets/record-icon.png" alt="Record" class="menu-icon"> Record ></li>
+                <li><img src="assets/settings-icon.png" alt="Settings" class="menu-icon"> Settings ></li>
+                <li><img src="assets/contact-icon.png" alt="Contact" class="menu-icon"> Contact Us ></li>
+                <li><img src="assets/support-icon.png" alt="Support" class="menu-icon"> Support US ></li>
+                <li onclick="openResetExpModal()"><img src="assets/reset-icon.png" alt="Reset" class="menu-icon"> Reset Experience ></li> <!-- 新添加，重置按钮 -->
+            </ul>
+            <nav class="bottom-nav">
+                <button onclick="navigateTo('elf-home')"><img src="assets/elf-nav-icon.png" alt="Elf"> Elf</button>
+                <button onclick="navigateTo('map')"><img src="assets/map-nav-icon.png" alt="Map"> Map</button>
+                <button onclick="navigateTo('scan')"><img src="assets/scan-nav-icon.png" alt="Scan"> Scan</button>
+                <button onclick="navigateTo('friend')"><img src="assets/friend-nav-icon.png" alt="Friend"> Friend</button>
+                <button onclick="navigateTo('mine')"><img src="assets/mine-nav-icon.png" alt="Mine"> Mine</button>
+            </nav>
+        </section>
+
+
+        <!-- Map Screen -->
+        <section id="map" class="screen">
+            
+            <h2>Map</h2>
+            <input type="text" placeholder="Search">
+            <div class="map-view">
+                <div id="mapid"></div>
+                <div class="controls">+ - ← → ↑ ↓</div>
+                <p><img src="assets/you-are-here.png" alt="You are here" class="small-icon"> YOU are here</p>
+                
+            </div>
+            <!-- 新添加：垃圾桶位置图片 -->
+            <div class="map-images">
+                <img class="map-extra-image" src="assets/map-image1.png" alt="Trash Bin Location 1">
+                <img class="map-extra-image" src="assets/map-image2.png" alt="Trash Bin Location 2">
+            </div>
+            <nav class="bottom-nav">
+                <button onclick="navigateTo('elf-home')"><img src="assets/elf-nav-icon.png" alt="Elf"> Elf</button>
+                <button onclick="navigateTo('map')"><img src="assets/map-nav-icon.png" alt="Map"> Map</button>
+                <button onclick="navigateTo('scan')"><img src="assets/scan-nav-icon.png" alt="Scan"> Scan</button>
+                <button onclick="navigateTo('friend')"><img src="assets/friend-nav-icon.png" alt="Friend"> Friend</button>
+                <button onclick="navigateTo('mine')"><img src="assets/mine-nav-icon.png" alt="Mine"> Mine</button>
+            </nav>
+        </section>
+
+        <!-- Friend Elf View -->
+        <section id="friend-elf" class="screen">
+            
+            <h2 id="friend-name">Friend's Elf</h2>
+            <div class="elf-image">
+                <img src="assets/elf-character.png" alt="Friend Elf">
+            </div>
+            <p>Level: <span id="friend-level">1</span></p>
+            <button class="back" onclick="navigateTo('friend')">&lt; Back</button>
+        </section>
+
+        <!-- Experience Details Screen -->
+        <section id="experience-details" class="screen">
+            
+            <h2>Experience Details</h2>
+            <div class="tree-container">
+                <div class="tree" id="plastic-tree">
+                    <div class="tree-images"></div> <!-- 容器，用于动态添加多个树GIF -->
+                    <p>Plastic: <span id="plastic-exp">0</span> / <span id="plastic-max">100</span> (Level <span id="plastic-level">1</span>)</p>
+                </div>
+                <div class="tree" id="metal-tree">
+                    <div class="tree-images"></div>
+                    <p>Metal: <span id="metal-exp">0</span> / <span id="metal-max">100</span> (Level <span id="metal-level">1</span>)</p>
+                </div>
+                <div class="tree" id="paper-tree">
+                    <div class="tree-images"></div>
+                    <p>Paper Box: <span id="paper-exp">0</span> / <span id="paper-max">100</span> (Level <span id="paper-level">1</span>)</p>
+                </div>
+                <div class="tree" id="battery-tree">
+                    <div class="tree-images"></div>
+                    <p>Battery: <span id="battery-exp">0</span> / <span id="battery-max">100</span> (Level <span id="battery-level">1</span>)</p>
+                </div>
+                <div class="tree total-tree" id="total-tree">
+                    <div class="tree-images"></div>
+                    <p>Total: <span id="total-exp">0</span> / <span id="total-max">100</span> (Level <span id="total-level">1</span>)</p>
+                </div>
+            </div>
+            <button class="back" onclick="navigateTo('elf-home')">&lt; Back</button>
+        </section>
+    <!-- 感谢动画模态弹出层 -->
+    <div id="thanks-modal" class="modal">
+        <div class="modal-content">
+            <!-- 替换为 GIF，并移除 fallback p -->
+            <img id="thanks-gif" src="assets/thanks-animation.gif" alt="Thanks Animation" style="width: 300px; height: 300px; margin: 0 auto; display: block;">
+            <p>感谢您为环保做出贡献！</p>
+            <button class="btn primary" onclick="closeThanksModal()">关闭</button>
+        </div>
+    </div>
+    <!-- 自定义模态：添加翻页容器 -->
+    <div id="customize-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="customize-title">Customize</h2>
+            <div id="customize-options" class="customize-options"></div> <!-- 动态选项 -->
+            <div id="pagination" style="display: none; text-align: center; margin-top: 10px;"> <!-- 翻页容器，只cloths显示 -->
+                <button class="btn secondary" onclick="changePage(-1)">Prev</button>
+                <span id="page-info">Page 1/4</span>
+                <button class="btn secondary" onclick="changePage(1)">Next</button>
+            </div>
+            <button class="btn primary" onclick="closeCustomizeModal()">Close</button>
+        </div>
+    </div>
+    <!-- 新模态：经验值清空 -->
+    <div id="reset-exp-modal" class="modal">
+        <div class="modal-content">
+            <h2>Reset Experience</h2>
+            <p>Enter admin password to clear all EXP and levels:</p>
+            <input type="password" id="admin-password" placeholder="Admin Password">
+            <button class="btn primary" onclick="resetExperience()">Confirm Reset</button>
+            <button class="btn secondary" onclick="closeResetExpModal()">Cancel</button>
+            <p id="reset-message" style="color: red;"></p>
+        </div>
+    </div>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="script.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99c40e047af70945',t:'MTc2Mjc2MjAzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
